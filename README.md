@@ -11,7 +11,7 @@ in &lt;head&gt;
 ##Usage
 __create SVG canvas__
 
-	var c = new SVG(300, 300)
+	var c = new SVG(300, 300);
 in this case, a 300px x 300px canvas is made.
 
 __draw line__
