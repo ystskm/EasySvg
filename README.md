@@ -17,8 +17,8 @@ in this case, a 300px x 300px canvas is made.
 __draw line__
 
 	c.line({x1:100, y1:100, x2:200 , y2:200})
-attributes could be drawn by object-formatted.
-in this case, a part of diagonal line will be drawn
+attributes could be drawn by object-formatted.  
+in this case, a part of diagonal line will be drawn  
 
 __draw text__
 
