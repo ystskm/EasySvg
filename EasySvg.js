@@ -1,6 +1,6 @@
 /***/
 // EasySvg.js
-// - make svg item easily 
+// - make svg item easily with jQuery
 function Svg(attr) {
   this.svg = this.item(null, attr);
   this.svg.style.position = 'absolute';
@@ -14,6 +14,9 @@ function Svg(attr) {
     XLINK: 'http://www.w3.org/1999/xlink'
   };
   var SvgProtos = {
+    attr: attr,
+    removeAttr: removeAttr,
+    find: find,
     appendTo: appendTo,
     appendItem: appendItem,
     hasClass: hasClass,
@@ -32,6 +35,35 @@ function Svg(attr) {
   for( var i in SvgProtos)
     Svg.prototype[i] = SvgProtos[i];
 
+  function attr(k, v, $targ) {
+    if(v && typeof v == 'object')
+      $targ = v, v = null;
+    var item = retrieve($targ, this);
+    if(typeof k == 'string' && v == null)
+      return item.getAttribute(k);
+    var attrs = {};
+    if(typeof k == 'string')
+      attrs[k] = v;
+    else
+      attrs = k;
+    for( var i in attrs)
+      if(typeof attrs[i] == 'string')
+        item.setAttribute(i, attrs[i]);
+      else
+        item.removeAttribute(i);
+  }
+
+  function removeAttr(k, $targ) {
+    var item = retrieve($targ, this);
+    [].concat(k).forEach(function(k) {
+      item.removeAttribute(k);
+    });
+  }
+
+  function find(sel, $targ) {
+    return $(retrieve($targ, this)).find(sel);
+  }
+
   function item(type, attr) {
     var item = document.createElementNS(NS.SVG, type || 'svg');
     if(attr)
@@ -40,22 +72,21 @@ function Svg(attr) {
     return item;
   }
 
-  function appendItem(type, attr, parent) {
-    return normal(type).call(this, attr, parent);
+  function appendItem(type, attr, $parent) {
+    return normal(type).call(this, attr, $parent);
   }
 
-  function appendTo($dom) {
-    (typeof $ == 'function' && $dom instanceof $ ? $dom.get(0): $dom)
-        .appendChild(this.svg);
+  function appendTo($wrap) {
+    ($wrap.get && $wrap.get(0) || $wrap).appendChild(this.svg);
   }
 
   function hasClass(sel, cls) {
-    var _this = $(this.svg).find(sel).get(0);
-    return !!(_this && _classList(_this)[cls]);
+    var item = this.find(sel).get(0);
+    return !!(item && _classList(item)[cls]);
   }
 
   function addClass(sel, cls) {
-    $(this.svg).find(sel).each(function() {
+    this.find(sel).each(function() {
       var clsls = _classList(this);
       cls.split(' ').forEach(function(cls) {
         clsls[cls] = true;
@@ -65,7 +96,7 @@ function Svg(attr) {
   }
 
   function removeClass(sel, cls) {
-    $(this.svg).find(sel).each(function() {
+    this.find(sel).each(function() {
       var clsls = _classList(this);
       cls.split(' ').forEach(function(cls) {
         delete clsls[cls];
@@ -74,43 +105,47 @@ function Svg(attr) {
     });
   }
 
-  function _classList(_this) {
-    var clsls = {}, ga_cls = _this.getAttribute('class');
+  function _classList(item) {
+    var clsls = {}, ga_cls = item.getAttribute('class');
     ga_cls && ga_cls.split(' ').forEach(function(cls) {
       clsls[cls] = true;
     });
     return clsls;
   }
 
-  function clear() {
-    var svgNode = this.svg;
+  function clear($parent) {
+    var svgNode = retrieve($parent, this);
     while(svgNode.firstChild)
       svgNode.removeChild(svgNode.firstChild);
   }
 
   function normal(type) {
-    return function(attr, parent) {
+    return function(attr, $parent) {
       var item = this.item(type, attr);
-      return (parent || this.svg).appendChild(item), item;
+      return retrieve($parent, this).appendChild(item), item;
     };
   }
 
-  function text(t, attr) {
+  function text(t, attr, $parent) {
     var item = this.item('text', attr);
     item.textContent = t;
-    return this.svg.appendChild(item), item;
+    return retrieve($parent, this).appendChild(item), item;
   }
 
-  function image(href, attr) {
+  function image(href, attr, $parent) {
     var item = this.item('image', attr);
     item.setAttributeNS(NS.XLINK, 'xlink:href', href);
-    return this.svg.appendChild(item), item;
+    return retrieve($parent, this).appendChild(item), item;
   }
 
-  function use(href, attr) {
+  function use(href, attr, $parent) {
     var item = this.item('use', attr);
     item.setAttributeNS(NS.XLINK, 'xlink:href', href);
-    return this.svg.appendChild(item), item;
+    return retrieve($parent, this).appendChild(item), item;
+  }
+
+  function retrieve($parent, inst) {
+    return $parent ? ($parent.get && $parent.get(0) || $parent): inst.svg;
   }
 
 })(window, window.jQuery);
