@@ -47,7 +47,7 @@ function Svg(attr) {
     else
       attrs = k;
     for( var i in attrs)
-      if(typeof attrs[i] == 'string')
+      if(/string|number/.test(typeof attrs[i]))
         item.setAttribute(i, attrs[i]);
       else
         item.removeAttribute(i);
